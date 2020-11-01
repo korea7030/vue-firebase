@@ -2,6 +2,16 @@ import Vue from 'vue'
 import Vuetify, { VSnackbar, VBtn, VIcon } from 'vuetify/lib'
 import VuetifyToast from 'vuetify-toast-snackbar'
 
+import en from 'vuetify/es5/locale/en'
+import ko from 'vuetify/es5/locale/ko'
+
+const VuetifyObj = new Vuetify({
+  lang: {
+    locales: { en, ko },
+    current: 'ko'
+  }
+})
+
 Vue.use(Vuetify, {
   components: {
     VSnackbar,
@@ -9,14 +19,15 @@ Vue.use(Vuetify, {
     VIcon
   }
 })
-
 Vue.use(VuetifyToast, {
   x: 'right', // default
   y: 'bottom', // default
   color: 'info', // default
   icon: 'mdi-information',
   iconColor: '', // default
-  classes: ['body-2'],
+  classes: [
+    'body-2'
+  ],
   timeout: 3000, // default
   dismissable: true, // default
   multiLine: false, // default
@@ -32,7 +43,8 @@ Vue.use(VuetifyToast, {
       color: 'purple'
     }
   },
-  property: '$toast' // default
+  property: '$toast', // default
+  $vuetify: VuetifyObj.framework
 })
 
-export default new Vuetify({})
+export default VuetifyObj
