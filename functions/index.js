@@ -62,9 +62,25 @@ exports.onDeleteBoard = functions.region(region).firestore
 exports.onCreateBoardArticle = functions.region(region).firestore
   .document('boards/{bid}/articles/{aid}')
   .onCreate((snap, context) => {
-    return db.collection('boards').doc(context.params.bid)
-      .update({ count: admin.firestore.FieldValue.increment(1) })
+    const set = {
+      count: admin.firestore.FieldValue.increment(1)
+    }
+    const doc = snap.data()
+    if (doc.category) set.categories = admin.firestore.FieldValue.arrayUnion(doc.category)
+    if (doc.tags.length) set.tags = admin.firestore.FieldValue.arrayUnion(...doc.tags)
+    return db.collection('boards').doc(context.params.bid).update(set)
   })
+
+exports.onUpdateBoardArticle = functions.region(region).firestore
+  .document('boards/{bid}/articles/{aid}')
+  .onUpdate((change, context) => {
+    const set = {}
+    const doc = change.after.data()
+    if (doc.category) set.categories = admin.firestore.FieldValue.arrayUnion(doc.category)
+    if (doc.tags.length) set.tags = admin.firestore.FieldValue.arrayUnion(...doc.tags)
+    if (!Object.keys(set).length) return false
+    return db.collection('boards').doc(context.params.bid).update(set)
+})
 
 exports.onDeleteBoardArticle = functions.region(region).firestore
   .document('boards/{bid}/articles/{aid}')
@@ -89,7 +105,7 @@ exports.onDeleteBoardArticle = functions.region(region).firestore
     const ps = []
     ps.push('boards')
     ps.push(context.params.bid)
-    ps.push(context.params.aid + '.md')
+    ps.push(context.params.aid + '-' + snap.data().uid + '.md')
 
     await admin.storage().bucket().file(ps.join('/'))
       .delete()
