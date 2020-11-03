@@ -16,31 +16,51 @@
     </v-card-title>
     <template v-for="(item, i) in items">
       <v-list-item :key="item.id">
-        <v-list-item-action>
-          <display-user :user="item.user"></display-user>
-        </v-list-item-action>
         <v-list-item-content>
-          <v-list-item-subtitle class="black--text comment" v-text="item.comment"></v-list-item-subtitle>
-          <v-list-item-subtitle class="font-italic">
-            <display-time :time="item.createdAt"></display-time>
+          <v-list-item-subtitle v-if="!item.edit" class="black--text comment" v-text="item.comment"></v-list-item-subtitle>
+          <v-list-item-subtitle v-else>
+            <v-textarea
+              v-model="item.comment"
+              outlined
+              label="댓글 수정"
+              placeholder="Ctrl + Enter로 작성 가능"
+              append-icon="mdi-comment-edit"
+              @click:append="update(item)"
+              @keypress.ctrl.enter="update(item)"
+              hide-details
+              auto-grow
+              rows="1"
+              clearable
+              class="mt-2"
+            ></v-textarea>
           </v-list-item-subtitle>
+          <v-list-item-subtitle class="d-flex justify-end align-center">
+            <span class="font-italic mr-4"><display-time :time="item.createdAt"></display-time></span>
+            <display-user :user="item.user" size="small"></display-user>
+          </v-list-item-subtitle>
+          <v-list-item-title class="d-flex justify-end">
+            <v-btn
+              icon
+              @click="item.edit=!item.edit"
+              :color="item.edit ? 'warning' : ''"
+              v-if="(fireUser && fireUser.uid === item.uid)"
+            >
+              <v-icon>mdi-pencil</v-icon>
+            </v-btn>
+            <v-btn icon @click="remove(item)" v-if="(fireUser && fireUser.uid === item.uid) || (user && user.level === 0)">
+              <v-icon>mdi-delete</v-icon>
+            </v-btn>
+            <v-btn @click="like(item)" text>
+              <v-icon left :color="liked(item) ? 'success': ''">mdi-thumb-up</v-icon>
+              <span>{{item.likeCount}}</span>
+            </v-btn>
+          </v-list-item-title>
         </v-list-item-content>
-        <v-list-item-action>
-          <v-btn @click="like(item)" text>
-            <v-icon left :color="liked(item) ? 'success': ''">mdi-thumb-up</v-icon>
-            <span>{{item.likeCount}}</span>
-          </v-btn>
-        </v-list-item-action>
-        <v-list-item-action v-if="(fireUser && fireUser.uid === item.uid) || (user && user.level === 0)">
-          <v-btn icon @click="remove(item)">
-            <v-icon>mdi-delete</v-icon>
-          </v-btn>
-        </v-list-item-action>
       </v-list-item>
       <v-divider :key="i" v-if="i < items.length - 1"></v-divider>
     </template>
     <v-list-item v-if="lastDoc && items.length < article.commentCount">
-      <v-btn @click="more" v-intersect="onIntersect" text color="primary" block>더보기</v-btn>
+      <v-btn @click="more" :loading="loading" v-intersect="onIntersect" text color="primary" block>더보기</v-btn>
     </v-list-item>
   </v-card>
 </template>
@@ -57,7 +77,8 @@ export default {
       comment: '',
       items: [],
       unsubscribe: null,
-      lastDoc: null
+      lastDoc: null,
+      loading: false
     }
   },
   computed: {
@@ -89,6 +110,7 @@ export default {
           item.id = doc.id
           item.createdAt = item.createdAt.toDate()
           item.updatedAt = item.updatedAt.toDate()
+          item.edit = false
           this.items.push(item)
         } else {
           findItem.comment = item.comment
@@ -114,8 +136,14 @@ export default {
     },
     async more () {
       if (!this.lastDoc) throw Error('더이상 데이터가 없습니다')
-      const sn = await this.docRef.collection('comments').orderBy('createdAt', 'desc').startAfter(this.lastDoc).limit(LIMIT).get()
-      this.snapshotToItems(sn)
+      if (this.loading) return
+      this.loading = true
+      try {
+        const sn = await this.docRef.collection('comments').orderBy('createdAt', 'desc').startAfter(this.lastDoc).limit(LIMIT).get()
+        this.snapshotToItems(sn)
+      } finally {
+        this.loading = false
+      }
     },
     onIntersect (entries, observer, isIntersecting) {
       if (isIntersecting) this.more()
@@ -123,7 +151,7 @@ export default {
     async save () {
       if (!this.fireUser) throw Error('로그인이 필요합니다')
       if (!this.comment) throw Error('내용을 작성해야 합니다')
-      if (this.comment.length > 10) throw Error('문자 허용치를 넘었습니다')
+      if (this.comment.length > 300) throw Error('문자 허용치를 넘었습니다')
       const doc = {
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -169,6 +197,14 @@ export default {
       await this.docRef.collection('comments').doc(comment.id).delete()
       const i = this.items.findIndex(el => el.id === comment.id)
       this.items.splice(i, 1)
+    },
+    async update (comment) {
+      comment.updatedAt = new Date()
+      try {
+        await this.docRef.collection('comments').doc(comment.id).update(comment)
+      } finally {
+        comment.edit = false
+      }
     }
   }
 }
