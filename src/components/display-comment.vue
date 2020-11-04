@@ -17,7 +17,9 @@
     <template v-for="(item, i) in items">
       <v-list-item :key="item.id">
         <v-list-item-content>
-          <v-list-item-subtitle v-if="!item.edit" class="black--text comment" v-text="item.comment"></v-list-item-subtitle>
+          <v-list-item-subtitle v-if="!item.edit" class="black--text white-space">
+            <v-icon color="error" left v-if="newCheck(item.updatedAt)">mdi-fire</v-icon> {{item.comment}}
+          </v-list-item-subtitle>
           <v-list-item-subtitle v-else>
             <v-textarea
               v-model="item.comment"
@@ -60,7 +62,15 @@
       <v-divider :key="i" v-if="i < items.length - 1"></v-divider>
     </template>
     <v-list-item v-if="lastDoc && items.length < article.commentCount">
-      <v-btn @click="more" :loading="loading" v-intersect="onIntersect" text color="primary" block>더보기</v-btn>
+      <v-btn
+        @click="more"
+        :loading="loading"
+        v-intersect="onIntersect"
+        text
+        color="primary"
+        block>
+        <v-icon>mdi-dots-horizontal</v-icon>더보기
+      </v-btn>
     </v-list-item>
   </v-card>
 </template>
@@ -68,6 +78,8 @@
 import { last } from 'lodash'
 import DisplayTime from '@/components/display-time'
 import DisplayUser from '@/components/display-user'
+import newCheck from '@/util/newCheck'
+
 const LIMIT = 5
 export default {
   components: { DisplayTime, DisplayUser },
@@ -78,7 +90,8 @@ export default {
       items: [],
       unsubscribe: null,
       lastDoc: null,
-      loading: false
+      loading: false,
+      newCheck
     }
   },
   computed: {
@@ -209,8 +222,3 @@ export default {
   }
 }
 </script>
-<style scoped>
-.comment {
-  white-space: pre-wrap;
-}
-</style>
