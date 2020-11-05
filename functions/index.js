@@ -60,9 +60,9 @@ exports.onDeleteBoard = functions.region(region).firestore
   })
 
 const removeOldTempFiles = async () => {
-  // const moment = require('moment')
+  const moment = require('moment')
   const sn = await db.collection('tempFiles')
-    // .where('createdAt', '<', moment().subtract(1, 'hours').toDate())
+    .where('createdAt', '<', moment().subtract(1, 'hours').toDate())
     .orderBy('createdAt')
     .limit(5)
     .get()
@@ -121,7 +121,6 @@ exports.onUpdateBoardArticle = functions.region(region).firestore
     const set = {}
     const beforeDoc = change.before.data()
     const doc = change.after.data()
-
     if (doc.category && beforeDoc.category !== doc.category) set.categories = admin.firestore.FieldValue.arrayUnion(doc.category)
     if (doc.tags.length && isEqual(beforeDoc.tags, doc.tags)) set.tags = admin.firestore.FieldValue.arrayUnion(...doc.tags)
     if (Object.keys(set).length) await db.collection('boards').doc(context.params.bid).update(set)
@@ -161,7 +160,7 @@ exports.onUpdateBoardArticle = functions.region(region).firestore
     } catch (e) {
       console.error('tempFiles remove err: ' + e.message)
     }
-})
+  })
 
 exports.onDeleteBoardArticle = functions.region(region).firestore
   .document('boards/{bid}/articles/{aid}')
@@ -192,7 +191,7 @@ exports.onDeleteBoardArticle = functions.region(region).firestore
     await admin.storage().bucket().file(ps.join('/'))
       .delete()
       .catch(e => console.error('storage remove err: ' + e.message))
-    
+
     const imgs = []
     imgs.push('images')
     imgs.push('boards')
@@ -219,24 +218,23 @@ exports.onDeleteBoardComment = functions.region(region).firestore
       .update({ commentCount: admin.firestore.FieldValue.increment(-1) })
   })
 
-
 exports.saveTempFiles = functions.region(region).storage
-.object().onFinalize(async (object) => {
-  const last = require('lodash').last
-  const name = object.name
-  if (last(name.split('.')) === 'md') return
-  const createdAt = new Date()
-  const id = createdAt.getTime().toString()
-  const set = {
-    name,
-    contentType: object.contentType,
-    size: object.size,
-    crc32c: object.crc32c,
-    createdAt,
-    id: last(name.split('/'))
-  }
-  await db.collection('tempFiles').doc(id).set(set)
-})
+  .object().onFinalize(async (object) => {
+    const last = require('lodash').last
+    const name = object.name
+    if (last(name.split('.')) === 'md') return
+    const createdAt = new Date()
+    const id = createdAt.getTime().toString()
+    const set = {
+      name,
+      contentType: object.contentType,
+      size: object.size,
+      crc32c: object.crc32c,
+      createdAt,
+      id: last(name.split('/'))
+    }
+    await db.collection('tempFiles').doc(id).set(set)
+  })
 
 // exports.onDeleteTempFile = functions.region(region).firestore
 //   .document('tempFiles/{tid}')
@@ -252,3 +250,40 @@ exports.saveTempFiles = functions.region(region).storage
 //         .catch(e => console.error('tempFile remove err: ' + e.message))
 //     }
 //   })
+exports.seo = functions.https.onRequest(async (req, res) => {
+  const { parse } = require('node-html-parser')
+  const fs = require('fs')
+  const pluralize = require('pluralize')
+  const html = fs.readFileSync('index.html').toString()
+  const root = parse(html)
+
+  const ps = req.path.split('/')
+  ps.shift()
+  ps.forEach((v, i) => console.log(i, v))
+  if (ps.length !== 3) return res.send(html)
+  const mainCollection = pluralize(ps.shift())
+  const board = ps.shift()
+  const article = ps.shift()
+
+  const doc = await db.collection(mainCollection).doc(board).collection('articles').doc(article).get()
+
+  if (!doc.exists) return res.send(html)
+  const item = doc.data()
+
+  const child = root.lastChild.childNodes[0]
+  const titleNode = child.childNodes[0]
+  const descriptionNode = child.childNodes[1]
+  const ogTitleNode = child.childNodes[2]
+  const ogDescriptionNode = child.childNodes[3]
+  const ogImageNode = child.childNodes[4]
+
+  const title = item.title
+  const description = item.summary.substr(0, 80)
+  const image = item.images.length ? item.images[0].thumbUrl : '/logo.png'
+  titleNode.set_content(title)
+  descriptionNode.setAttribute('content', description)
+  ogTitleNode.setAttribute('content', title)
+  ogDescriptionNode.setAttribute('content', description)
+  ogImageNode.setAttribute('content', image)
+  res.status(200).send(root.toString())
+})

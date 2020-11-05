@@ -9,7 +9,7 @@
           0.0.1
         </v-list-item-subtitle>
       </v-list-item-content>
-      <v-list-item-action>
+       <v-list-item-action v-if="user && user.level === 0">
         <v-btn @click="$store.commit('setEdit', !$store.state.editable)" icon>
           <v-icon v-text="$store.state.editable ? 'mdi-eye' : 'mdi-pencil'"></v-icon>
         </v-btn>
@@ -144,6 +144,14 @@ export default {
       }
     }
   },
+  computed: {
+    user () {
+      return this.$store.state.user
+    },
+    fireUser () {
+      return this.$store.state.fireUser
+    }
+  },
   methods: {
     async save () {
       try {
@@ -202,7 +210,15 @@ export default {
       items.splice(i + arrow, 0, ...items.splice(i, 1))
       this.save()
     },
-    removeItem (items, i) {
+    async removeItem (items, i) {
+      const r = await this.$swal.fire({
+        title: '정말 삭제하시겠습니까?',
+        text: '삭제 후 되돌릴 수 없습니다.',
+        icon: 'error',
+        // confirmButtonText: 'Cool',
+        showCancelButton: true
+      })
+      if (!r.value) return
       items.splice(i, 1)
       this.save()
     }

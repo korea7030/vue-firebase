@@ -13,12 +13,23 @@
         <v-toolbar color="transparent" dense flat>
           <v-toolbar-title>게시물 작성</v-toolbar-title>
           <v-spacer/>
-          <v-btn icon @click="save" :disabled="!user"><v-icon>mdi-content-save</v-icon></v-btn>
+          <!-- <v-btn icon @click="save" :disabled="!user"><v-icon>mdi-content-save</v-icon></v-btn> -->
           <v-btn icon @click="$router.push('/board/' + boardId)"><v-icon>mdi-close</v-icon></v-btn>
         </v-toolbar>
         <v-divider/>
         <v-card-text>
           <v-row>
+            <v-col cols="12" sm="2" v-if="board">
+              <v-select
+                v-model="form.important"
+                :items="[
+                  { value: 0, text: '일반'},
+                  { value: 1, text: '공지'},
+                  { value: 2, text: '중요'}
+                ]"
+                label="유형"
+                outlined hide-details />
+            </v-col>
             <v-col cols="12" sm="4" v-if="board">
               <v-combobox
                 v-model="form.category"
@@ -26,7 +37,7 @@
                 label="종류"
                 outlined hide-details />
             </v-col>
-            <v-col cols="12" sm="8" v-if="board">
+            <v-col cols="12" sm="6" v-if="board">
               <v-combobox
                 v-model="form.tags"
                 :items="board.tags"
@@ -63,6 +74,7 @@
         <v-divider/>
         <v-card-actions>
           <v-spacer/>
+          <v-btn text @click="$router.push('/board/' + boardId)"><v-icon left>mdi-close</v-icon>취소</v-btn>
           <v-btn @click="save" :disabled="!user" text color="primary">
             <v-icon left>mdi-content-save</v-icon> 저장
           </v-btn>
@@ -75,7 +87,6 @@
 import axios from 'axios'
 import getSummary from '@/util/getSummary'
 import imageCompress from '@/util/imageCompress'
-
 export default {
   props: ['boardId', 'articleId', 'action'],
   data () {
@@ -85,7 +96,8 @@ export default {
         tags: [],
         title: '',
         content: '',
-        images: []
+        images: [],
+        important: 0
       },
       exists: false,
       loading: false,
@@ -98,7 +110,10 @@ export default {
         hooks: {
           addImageBlobHook: this.addImageBlobHook
         }
-      }
+      },
+      plugins: [
+        [this.youtubePlugin]
+      ]
     }
   },
   computed: {
@@ -112,13 +127,20 @@ export default {
   watch: {
     boardId () {
       this.fetch()
+    },
+    articleId () {
+      this.fetch()
+    },
+    action () {
+      this.fetch()
     }
   },
   created () {
     this.fetch()
   },
+  mounted () {
+  },
   destroyed () {
-
   },
   methods: {
     async fetch () {
@@ -137,8 +159,9 @@ export default {
       this.form.tags = item.tags
       this.form.images = item.images
       if (!item.images) this.form.images = []
+      this.form.important = item.important
       const { data } = await axios.get(item.url)
-      this.form.content = data
+      this.form.content = typeof data === 'string' ? data : data.toString()
     },
     async save () {
       if (!this.fireUser) throw Error('로그인이 필요합니다')
@@ -154,7 +177,8 @@ export default {
           tags: this.form.tags,
           images: this.findImagesFromDoc(md, this.form.images), // this.form.images,
           updatedAt: new Date(),
-          summary: getSummary(md, 300, 'data:image')
+          summary: getSummary(md, 300, 'data:image'),
+          important: this.form.important
         }
         if (!this.exists) {
           const fn = this.articleId + '-' + this.fireUser.uid + '.md'
