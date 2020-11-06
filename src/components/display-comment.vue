@@ -1,22 +1,5 @@
 <template>
   <v-card flat>
-    <!-- <template v-if="items.length > 4"> 
-      <v-card-title>
-        <v-textarea
-          v-model="comment"
-          outlined
-          label="댓글 작성"
-          placeholder="Ctrl + Enter로 작성 가능"
-          append-icon="mdi-comment-plus"
-          @click:append="save"
-          @keypress.ctrl.enter="save"
-          hide-details
-          auto-grow
-          rows="1"
-          clearable />
-      </v-card-title>
-      <v-divider/>
-    </template>-->
     <template v-for="(item, i) in items">
       <v-divider :key="i" v-if="i > 0 && !replyDepth(item)"></v-divider>
       <v-list-item :key="item.id">
@@ -249,7 +232,6 @@ export default {
       if (this.article.commentCount > 100) throw Error('댓글 개수 허용치를 넘었습니다')
       if (!item.replyComment) throw Error('내용을 작성해야 합니다')
       if (item.replyComment.length > 300) throw Error('문자 허용치를 넘었습니다')
-      
       const depth = this.replyDepth(item)
       if (depth > 1) throw Error('대대댓글은 허용하지 않습니다')
       let no = 0
@@ -341,7 +323,6 @@ export default {
         title: '정말 삭제하시겠습니까?',
         text: '삭제 후 되돌릴 수 없습니다.',
         icon: 'error',
-        // confirmButtonText: 'Cool',
         showCancelButton: true
       })
       if (!r.value) return

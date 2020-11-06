@@ -68,7 +68,9 @@ const removeOldTempFiles = async () => {
     .get()
   if (sn.empty) return
   const batch = db.batch()
-  for (const doc of sn.docs) {
+  
+  // ES9 asynchronous iteration
+  for await (const doc of sn.docs) {
     const file = doc.data()
     await admin.storage().bucket().file(file.name).delete()
       .catch(e => console.error('tempFile remove err: ' + e.message))
@@ -135,11 +137,13 @@ exports.onUpdateBoardArticle = functions.region(region).firestore
     imgs.push(context.params.bid)
     imgs.push(context.params.aid)
     const p = imgs.join('/') + '/'
-    for (const image of deleteImages) {
-      await admin.storage().bucket().file(p + image.id)
+    
+    // ES9 asynchronous iteration
+    for await (const image of deleteImages) {
+      admin.storage().bucket().file(p + image.id)
         .delete()
         .catch(e => console.error('storage deleteImages remove err: ' + e.message))
-      await admin.storage().bucket().file(p + image.thumbId)
+      admin.storage().bucket().file(p + image.thumbId)
         .delete()
         .catch(e => console.error('storage deleteImages remove err: ' + e.message))
     }
@@ -236,20 +240,6 @@ exports.saveTempFiles = functions.region(region).storage
     await db.collection('tempFiles').doc(id).set(set)
   })
 
-// exports.onDeleteTempFile = functions.region(region).firestore
-//   .document('tempFiles/{tid}')
-//   .onDelete(async (snap, context) => {
-//     const moment = require('moment')
-//     const sn = await db.collection('tempFiles')
-//       .where('createdAt', '<', moment().subtract(1, 'hours'))
-//       .orderBy('createdAt')
-//       .limit(5)
-//     if (!sn.empty) return
-//     for (const doc of sn.docs) {
-//       await admin.storage().bucket().file(doc.name).delete()
-//         .catch(e => console.error('tempFile remove err: ' + e.message))
-//     }
-//   })
 exports.seo = functions.https.onRequest(async (req, res) => {
   const { parse } = require('node-html-parser')
   const fs = require('fs')
