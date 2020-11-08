@@ -68,9 +68,9 @@ const removeOldTempFiles = async () => {
     .get()
   if (sn.empty) return
   const batch = db.batch()
-  for (const doc of sn.docs) {
+  for await (const doc of sn.docs) {
     const file = doc.data()
-    await admin.storage().bucket().file(file.name).delete()
+    admin.storage().bucket().file(file.name).delete()
       .catch(e => console.error('tempFile remove err: ' + e.message))
     batch.delete(doc.ref)
   }
@@ -136,11 +136,11 @@ exports.onUpdateBoardArticle = functions.region(region).firestore
     imgs.push(context.params.bid)
     imgs.push(context.params.aid)
     const p = imgs.join('/') + '/'
-    for (const image of deleteImages) {
-      await admin.storage().bucket().file(p + image.id)
+    for await (const image of deleteImages) {
+      admin.storage().bucket().file(p + image.id)
         .delete()
         .catch(e => console.error('storage deleteImages remove err: ' + e.message))
-      await admin.storage().bucket().file(p + image.thumbId)
+      admin.storage().bucket().file(p + image.thumbId)
         .delete()
         .catch(e => console.error('storage deleteImages remove err: ' + e.message))
     }
