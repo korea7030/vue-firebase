@@ -25,6 +25,7 @@
     "firebase-admin": "^9.3.0",
     "lodash": "^4.17.20",
     "moment": "^2.29.1",
+    "sweetalert2": "^10.9.0",
     "vue": "^2.6.11",
     "vue-editor": "0.0.0",
     "vue-router": "^3.2.0",
