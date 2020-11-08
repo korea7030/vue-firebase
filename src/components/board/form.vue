@@ -2,7 +2,7 @@
   <v-container fluid v-if="!loaded">
     <v-skeleton-loader type="article"></v-skeleton-loader>
   </v-container>
-  <v-container fluid v-else-if="loaded && !(board? board: (user || (user && user.level === 0)))">
+  <v-container v-else-if="loaded && !user || (user && user.level > 0)" fluid>
     <v-alert type="warning" border="left" class="mb-0">
       게시판 정보를 불러오지 못했습니다
     </v-alert>
@@ -16,10 +16,9 @@
           <v-btn icon @click="save" :disabled="!user"><v-icon>mdi-content-save</v-icon></v-btn>
           <v-btn icon @click="$router.push('/board/' + boardId)"><v-icon>mdi-close</v-icon></v-btn>
         </v-toolbar>
-        <v-divider/>
         <v-card-text>
           <v-row>
-            <v-col cols="12" sm="2" v-if="board? board: (user && user.level === 0)">
+            <v-col cols="12" sm="2" v-if="board? board: user.level === 0">
               <v-select
                 v-model="form.important"
                 :items="[
@@ -30,14 +29,14 @@
                 label="유형"
                 outlined hide-details />
             </v-col>
-            <v-col cols="12" sm="4" v-if="board? board: (user && user.level === 0)">
+            <v-col cols="12" sm="4" v-if="board? board: user.level === 0">
               <v-combobox
                 v-model="form.category"
                 :items="board? board.categories: []"
                 label="종류"
                 outlined hide-details />
             </v-col>
-            <v-col cols="12" sm="6" v-if="board? board: (user && user.level === 0)">
+            <v-col cols="12" sm="6" v-if="board? board: user.level === 0">
               <v-combobox
                 v-model="form.tags"
                 :items="board? board.tags: []"
@@ -82,18 +81,19 @@
       </v-card>
     </v-form>
   </v-container>
+
 </template>
 <script>
 import axios from 'axios'
 import getSummary from '@/util/getSummary'
 import imageCompress from '@/util/imageCompress'
+
 export default {
   props: ['boardId', 'articleId', 'action'],
   data () {
     return {
       form: {
         category: '',
-        tags: [],
         title: '',
         content: '',
         images: [],
@@ -148,7 +148,7 @@ export default {
       this.loaded = false
       const docBoard = await this.ref.get()
       this.loaded = true
-      if (docBoard.data() !== undefined) this.board = docBoard.data()
+      this.board = docBoard.data()
       const doc = await this.ref.collection('articles').doc(this.articleId).get()
       this.exists = doc.exists
       if (!this.exists) return
@@ -181,8 +181,10 @@ export default {
           important: this.form.important
         }
         if (!this.exists) {
+          console.log('1')
           const fn = this.articleId + '-' + this.fireUser.uid + '.md'
           const sn = await this.$firebase.storage().ref().child('boards').child(this.boardId).child(fn).putString(md)
+          console.log('2')
           doc.url = await sn.ref.getDownloadURL()
           doc.createdAt = new Date()
           doc.commentCount = 0
@@ -195,12 +197,12 @@ export default {
           }
           doc.likeCount = 0
           doc.likeUids = []
-          console.log(doc)
+          console.log('3 :::', doc)
+          console.log(this.articleId)
           await this.ref.collection('articles').doc(this.articleId).set(doc)
           this.exists = true
           this.$router.push('/board/' + this.boardId)
         } else {
-          console.log(this.articleId)
           const fn = this.articleId + '-' + this.article.uid + '.md'
           await this.$firebase.storage().ref().child('boards').child(this.boardId).child(fn).putString(md)
           await this.ref.collection('articles').doc(this.articleId).update(doc)
@@ -216,6 +218,26 @@ export default {
       })
       return filteredImages
     },
+    // saveCategory () {
+    //   if (this.category.length > 20) throw Error('문자 개수를 초과했습니다')
+    //   if (this.category === '전체') throw Error('전체는 사용 불가능합니다')
+    //   const exists = this.form.categories.includes(this.category)
+    //   if (exists) throw Error('사용되고 있는 종류입니다')
+    //   this.form.categories.push(this.category)
+    //   this.category = ''
+    // },
+    // async removeCategory (item, i) {
+    //   const sn = await this.ref.collection('articles').where('category', '==', item).limit(1).get()
+    //   if (!sn.empty) throw Error('사용되고 있는 종류입니다')
+    //   this.form.categories.splice(i, 1)
+    // },
+    // saveTag () {
+    //   if (this.tag.length > 20) throw Error('문자 개수를 초과했습니다')
+    //   const exists = this.form.tags.includes(this.tag)
+    //   if (exists) throw Error('사용되고 있는 태그입니다')
+    //   this.form.tags.push(this.tag)
+    //   this.tag = ''
+    // },
     async imageUpload (file) {
       if (!this.fireUser) throw Error('로그인이 필요합니다')
       const thumbnail = await imageCompress(file)
@@ -242,6 +264,11 @@ export default {
       this.form.images.push(image)
       return image
     },
+    // async removeTag (item, i) {
+    //   const sn = await this.ref.collection('articles').where('tags', 'array-contains', item).limit(1).get()
+    //   if (!sn.empty) throw Error('사용되고 있는 태그입니다')
+    //   this.form.tags.splice(i, 1)
+    // }
     addImageBlobHook (blob, callback) {
       this.imageUpload(blob)
         .then(image => {
