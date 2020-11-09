@@ -10,7 +10,7 @@ service firebase.storage {
                     && (                      
                       request.resource.size < 5 * 1024 * 1024
                       && request.resource.contentType.matches('application/octet-stream')
-                      && (resource == null || request.resource.contentType == resource.contentType)
+                      && (resource == null || request.resource.contentType == resource.contentType)                      
                     )
                     // && articleId.size() == 16
       }

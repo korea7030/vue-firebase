@@ -24,3 +24,4 @@ pnpm-debug.log*
 
 firebaseConfig.js
 functions/key.json
+.firebase/*
