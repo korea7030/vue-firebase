@@ -1,9 +1,19 @@
 <template>
   <v-app>
-    <v-app-bar app color="primary" dark>
+    <v-app-bar app :color="toggle ? 'primary': ''" :dark="toggle? true: false">
       <v-app-bar-nav-icon @click="drawer = !drawer" />
       <site-title :title="site.title"></site-title>
       <v-spacer/>
+      <v-card-actions class="mt-5">
+        <v-switch v-if="toggle"
+          v-model="toggle"
+          label='light mode'
+        ></v-switch>
+        <v-switch v-else
+          v-model="toggle"
+          label='dark mode'
+        ></v-switch>
+      </v-card-actions>
       <site-sign></site-sign>
     </v-app-bar>
     <v-navigation-drawer
@@ -17,7 +27,7 @@
     <v-content>
       <router-view/>
     </v-content>
-    <site-footer :footer="site.footer"></site-footer>
+    <site-footer :toggle="this.toggle" :footer="site.footer"></site-footer>
   </v-app>
 </template>
 
@@ -32,6 +42,7 @@ export default {
   name: 'App',
   data () {
     return {
+      toggle: false,
       drawer: false,
       site: {
         menu: [

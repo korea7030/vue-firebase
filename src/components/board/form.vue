@@ -65,7 +65,7 @@
                 v-for="(item, i) in form.tags"
                 :key="i"
                 class="mr-2 mb-2">
-                {{item}} <v-icon small right @click="removeTag(item, i)">mdi-close</v-icon>
+                # {{item}} <v-icon small right @click="removeTag(item, i)">mdi-close</v-icon>
               </v-chip>
             </v-card-text>
             <v-card-actions>
