@@ -4,15 +4,10 @@
       <v-app-bar-nav-icon @click="drawer = !drawer" />
       <site-title :title="site.title"></site-title>
       <v-spacer/>
-      <v-card-actions class="mt-5">
-        <v-switch v-if="toggle"
-          v-model="toggle"
-          label='light mode'
-        ></v-switch>
-        <v-switch v-else
-          v-model="toggle"
-          label='dark mode'
-        ></v-switch>
+      <v-card-actions>
+        <v-btn color="info" small fab @click="darkMode">
+            <v-icon color="yellow">mdi-white-balance-sunny</v-icon>
+          </v-btn>
       </v-card-actions>
       <site-sign></site-sign>
     </v-app-bar>
@@ -20,13 +15,15 @@
       app
       v-model="drawer"
       :width="$store.state.editable ? 380 : null"
+      :color="toggle ? 'primary': ''"
+      :dark="toggle? true: false"
       >
       <!-- :width="$store.state.editable ? 380 : null" -->
       <site-menu :items="site.menu" @close="drawer=false"></site-menu>
     </v-navigation-drawer>
-    <v-content>
+    <v-main :color="toggle ? 'primary': ''" :dark="toggle? true: false">
       <router-view/>
-    </v-content>
+    </v-main>
     <site-footer :toggle="this.toggle" :footer="site.footer"></site-footer>
   </v-app>
 </template>
@@ -92,6 +89,9 @@ export default {
       }, (e) => {
         console.log(e.message)
       })
+    },
+    darkMode () {
+      this.$vuetify.theme.dark = !this.$vuetify.theme.dark
     }
   }
 }

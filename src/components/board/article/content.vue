@@ -33,7 +33,7 @@
       </v-toolbar>
       <v-divider/>
       <v-card-subtitle class="text--primary body-1">
-        <display-title :item="article"/>
+        <display-title :item="article"></display-title>
       </v-card-subtitle>
       <v-card-text>
         <viewer v-if="content" :initialValue="content" @load="onViewerLoad" :options="tuiOptions"></viewer>
@@ -202,7 +202,7 @@ export default {
       const ogTitleNode = document.querySelector('head meta[property="og:title"]')
       const ogDescriptionNode = document.querySelector('head meta[property="og:description"]')
       const ogImageNode = document.querySelector('head meta[property="og:image"]')
-      const title = item.title
+      const title = item.title + ' : jhlee'
       const description = item.summary.substr(0, 80)
       const image = item.images.length ? item.images[0].thumbUrl : '/logo.png'
       document.title = title

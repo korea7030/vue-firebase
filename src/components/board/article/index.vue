@@ -42,7 +42,7 @@
         <v-divider v-if="i < items.length - 1" :key="i"/>
       </template>
       <template v-else>
-        <v-card :key="item.id" :class="$vuetify.breakpoint.xs ? '' : 'ma-4'" :flat="$vuetify.breakpoint.xs">
+        <v-card light :key="item.id" :class="$vuetify.breakpoint.xs ? '' : 'ma-4'" :flat="$vuetify.breakpoint.xs">
           <v-card color="transparent" flat :to="category ? `${boardId}/${item.id}?category=${category}`:`${boardId}/${item.id}`">
             <v-card-subtitle class="text--primary body-1" :class="item.important > 0 ? 'text-truncate': ''">
               <display-title :item="item"/>
@@ -121,7 +121,7 @@ import DisplayTime from '@/components/display-time'
 import DisplayUser from '@/components/display-user'
 import DisplayTitle from '@/components/display-title'
 import DisplayCount from '@/components/display-count'
-import getSummary from '@/util/getSummary'
+// import getSummary from '@/util/getSummary'
 import addYoutubeIframe from '@/util/addYoutubeIframe'
 const LIMIT = 5
 export default {
@@ -141,7 +141,6 @@ export default {
       order: 'createdAt',
       sort: 'desc',
       loading: false,
-      getSummary,
       loaded: false
     }
   },
@@ -228,9 +227,6 @@ export default {
         this.snapshotToItems(sn)
       })
     },
-    read (item) {
-      this.$router.push({ path: this.$route.path + '/' + item.id })
-    },
     async more () {
       if (!this.lastDoc) throw Error('더이상 데이터가 없습니다')
       if (this.loading) return
@@ -244,10 +240,6 @@ export default {
     },
     onIntersect (entries, observer, isIntersecting) {
       if (isIntersecting) this.more()
-    },
-    liked (item) {
-      if (!this.fireUser) return false
-      return item.likeUids.includes(this.fireUser.uid)
     },
     onViewerLoad (v) {
       addYoutubeIframe(v.preview.el, this.$vuetify.breakpoint)

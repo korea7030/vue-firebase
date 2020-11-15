@@ -28,7 +28,6 @@ export default (el) => {
   items.forEach(p => {
     p.doc.parentNode.insertBefore(setIframe(p.id), p.doc)
   })
-  console.log(el)
 
   return el.innerHTML
 }
