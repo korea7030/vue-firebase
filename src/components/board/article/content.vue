@@ -115,7 +115,6 @@
       <display-comment :article="article" :docRef="ref"></display-comment>
     </v-card>
   </v-container>
-
 </template>
 <script>
 import axios from 'axios'

@@ -68,7 +68,9 @@ const removeOldTempFiles = async () => {
     .get()
   if (sn.empty) return
   const batch = db.batch()
-  for await(const doc of sn.docs) {
+  // ES9 asynchronous iteration
+  for await (const doc of sn.docs) {
+
     const file = doc.data()
     admin.storage().bucket().file(file.name).delete()
       .catch(e => console.error('tempFile remove err: ' + e.message))
@@ -136,6 +138,8 @@ exports.onUpdateBoardArticle = functions.region(region).firestore
     imgs.push(context.params.aid)
     const p = imgs.join('/') + '/'
     for await(const image of deleteImages) {
+    // ES9 asynchronous iteration
+    for await (const image of deleteImages) {
       admin.storage().bucket().file(p + image.id)
         .delete()
         .catch(e => console.error('storage deleteImages remove err: ' + e.message))
@@ -264,7 +268,6 @@ exports.seo = functions.https.onRequest(async (req, res) => {
   const mainCollection = pluralize(ps.shift())
   const board = ps.shift()
   const article = ps.shift()
-
   const doc = await db.collection(mainCollection).doc(board).collection('articles').doc(article).get()
 
   if (!doc.exists) return res.send(html)
@@ -278,6 +281,7 @@ exports.seo = functions.https.onRequest(async (req, res) => {
   const ogImageNode = child.childNodes[4]
 
   const title = item.title + ' : jhlee'
+
   const description = item.summary.substr(0, 80)
   const image = item.images.length ? item.images[0].thumbUrl : '/logo.png'
   titleNode.set_content(title)

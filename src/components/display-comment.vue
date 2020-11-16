@@ -137,6 +137,7 @@ import DisplayTime from '@/components/display-time'
 import DisplayUser from '@/components/display-user'
 import newCheck from '@/util/newCheck'
 const LIMIT = 5
+
 export default {
   components: { DisplayTime, DisplayUser },
   props: ['article', 'docRef'],
@@ -223,6 +224,7 @@ export default {
       if (this.article.commentCount > 100) throw Error('댓글 개수 허용치를 넘었습니다')
       if (!this.comment) throw Error('내용을 작성해야 합니다')
       if (this.comment.length > 300) throw Error('문자 허용치를 넘었습니다')
+
       const rs = this.items.filter(el => el.no % 10000 === 0)
       const doc = {
         createdAt: new Date(),
@@ -265,6 +267,7 @@ export default {
         if (rs.length) no = last(rs).no + 1
         else no = item.no + 1
       }
+
       const doc = {
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -286,6 +289,7 @@ export default {
         item.replyEdit = false
         item.replyComment = ''
       }
+
       const findItem = this.items.find(el => id === el.id)
       if (findItem) return
       doc.id = id
@@ -337,6 +341,7 @@ export default {
         text: '삭제 후 되돌릴 수 없습니다.',
         icon: 'error',
         // confirmButtonText: 'Cool',
+
         showCancelButton: true
       })
       if (!r.value) return

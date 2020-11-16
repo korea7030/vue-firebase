@@ -87,7 +87,6 @@
 import axios from 'axios'
 import getSummary from '@/util/getSummary'
 import imageCompress from '@/util/imageCompress'
-
 export default {
   props: ['boardId', 'articleId', 'action'],
   data () {

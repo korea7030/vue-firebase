@@ -4,6 +4,13 @@ import Vuetify, { VSnackbar, VBtn, VIcon } from 'vuetify/lib'
 import en from 'vuetify/es5/locale/en'
 import ko from 'vuetify/es5/locale/ko'
 
+Vue.use(Vuetify, {
+  components: {
+    VSnackbar,
+    VBtn,
+    VIcon
+  }
+})
 const theme = {
   themes: {
     light: {
@@ -24,21 +31,12 @@ const theme = {
     }
   }
 }
-
 const VuetifyObj = new Vuetify({
   lang: {
     locales: { en, ko },
     current: 'ko'
   },
   theme
-})
-
-Vue.use(Vuetify, {
-  components: {
-    VSnackbar,
-    VBtn,
-    VIcon
-  }
 })
 
 export default VuetifyObj

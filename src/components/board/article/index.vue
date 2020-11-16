@@ -123,6 +123,7 @@ import DisplayTitle from '@/components/display-title'
 import DisplayCount from '@/components/display-count'
 // import getSummary from '@/util/getSummary'
 import addYoutubeIframe from '@/util/addYoutubeIframe'
+
 const LIMIT = 5
 export default {
   components: { DisplayTime, DisplayUser, DisplayTitle, DisplayCount },
@@ -141,6 +142,7 @@ export default {
       order: 'createdAt',
       sort: 'desc',
       loading: false,
+      getSummary,
       loaded: false
     }
   },
@@ -240,6 +242,10 @@ export default {
     },
     onIntersect (entries, observer, isIntersecting) {
       if (isIntersecting) this.more()
+    },
+    liked (item) {
+      if (!this.fireUser) return false
+      return item.likeUids.includes(this.fireUser.uid)
     },
     onViewerLoad (v) {
       addYoutubeIframe(v.preview.el, this.$vuetify.breakpoint)
