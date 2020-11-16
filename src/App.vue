@@ -1,23 +1,30 @@
 <template>
   <v-app>
-    <v-app-bar app color="primary" dark>
+    <v-app-bar app :color="toggle ? 'primary': ''" :dark="toggle? true: false">
       <v-app-bar-nav-icon @click="drawer = !drawer" />
       <site-title :title="site.title"></site-title>
       <v-spacer/>
+      <v-card-actions>
+        <v-btn color="info" small fab @click="darkMode">
+            <v-icon color="yellow">mdi-white-balance-sunny</v-icon>
+          </v-btn>
+      </v-card-actions>
       <site-sign></site-sign>
     </v-app-bar>
     <v-navigation-drawer
       app
       v-model="drawer"
       :width="$store.state.editable ? 380 : null"
+      :color="toggle ? 'primary': ''"
+      :dark="toggle? true: false"
       >
       <!-- :width="$store.state.editable ? 380 : null" -->
       <site-menu :items="site.menu" @close="drawer=false"></site-menu>
     </v-navigation-drawer>
-    <v-content>
+    <v-main :color="toggle ? 'primary': ''" :dark="toggle? true: false">
       <router-view/>
-    </v-content>
-    <site-footer :footer="site.footer"></site-footer>
+    </v-main>
+    <site-footer :toggle="this.toggle" :footer="site.footer"></site-footer>
   </v-app>
 </template>
 
@@ -32,6 +39,7 @@ export default {
   name: 'App',
   data () {
     return {
+      toggle: false,
       drawer: false,
       site: {
         menu: [
@@ -81,6 +89,9 @@ export default {
       }, (e) => {
         console.log(e.message)
       })
+    },
+    darkMode () {
+      this.$vuetify.theme.dark = !this.$vuetify.theme.dark
     }
   }
 }

@@ -1,5 +1,5 @@
 <template>
-  <v-footer app color="primary" dark absolute :footer="footer">
+  <v-footer app :color="toggle ? 'primary': ''" :dark="toggle? true: false" absolute :footer="footer">
     <v-spacer></v-spacer>
     <div>{{ footer }}</div>
     <v-btn v-if="$store.state.editable" icon @click="openDialog"><v-icon>mdi-pencil</v-icon></v-btn>
@@ -20,7 +20,7 @@
 </template>
 <script>
 export default {
-  props: ['footer'],
+  props: ['footer', 'toggle'],
   data () {
     return {
       dialog: false,

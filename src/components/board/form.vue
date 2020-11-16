@@ -19,57 +19,83 @@
         <v-divider/>
         <v-card-text>
           <v-row>
-            <v-col cols="12" sm="2" v-if="board">
-              <v-select
-                v-model="form.important"
-                :items="[
-                  { value: 0, text: '일반'},
-                  { value: 1, text: '공지'},
-                  { value: 2, text: '중요'}
-                ]"
-                label="유형"
-                outlined hide-details />
+            <v-col cols="12" sm="4">
+              <v-text-field v-model="form.category" outlined label="게시판 종류"></v-text-field>
             </v-col>
-            <v-col cols="12" sm="4" v-if="board">
-              <v-combobox
-                v-model="form.category"
-                :items="board.categories"
-                label="종류"
-                outlined hide-details />
-            </v-col>
-            <v-col cols="12" sm="6" v-if="board">
-              <v-combobox
-                v-model="form.tags"
-                :items="board.tags"
-                label="태그"
-                outlined
-                multiple
-                small-chips hide-details />
+            <v-col cols="12" sm="4">
+              <v-select v-model="form.type" :items="types" outlined label="게시판 유형" :disabled="exists"></v-select>
             </v-col>
             <v-col cols="12">
-              <v-text-field v-model="form.title" outlined label="제목" hide-details></v-text-field>
+              <v-text-field v-model="form.title" outlined label="제목"></v-text-field>
             </v-col>
             <v-col cols="12">
-              <editor
-                v-if="!exists"
-                :initialValue="form.content"
-                ref="editor" initialEditType="wysiwyg" height="400px"
-                :options="options"
-                ></editor>
-              <template v-else>
-                <editor
-                  v-if="form.content"
-                  :initialValue="form.content"
-                  ref="editor" initialEditType="wysiwyg" height="400px"
-                  :options="options"></editor>
-                <v-container v-else>
-                  <v-row justify="center" align="center">
-                    <v-progress-circular indeterminate></v-progress-circular>
-                  </v-row>
-                </v-container>
-              </template>
+              <v-textarea v-model="form.description" outlined label="설명" hide-details></v-textarea>
             </v-col>
           </v-row>
+        </v-card-text>
+        <v-card-text>
+          <v-card outlined>
+            <v-subheader>등록된 종류</v-subheader>
+            <v-card-text>
+              <v-chip
+                color="info"
+                label
+                small
+                v-for="(item, i) in form.categories"
+                :key="i"
+                class="mr-2 mb-2">
+                {{item}} <v-icon small right @click="removeCategory(item, i)">mdi-close</v-icon>
+                </v-chip>
+            </v-card-text>
+            <v-card-actions>
+              <div width="100">
+                <v-text-field
+                  v-model="category"
+                  append-icon="mdi-plus"
+                  label="등록"
+                  placeholder="eg) social"
+                  hide-details
+                  outlined
+                  dense
+                  @click:append="saveCategory"
+                  @keypress.enter="saveCategory"
+                />
+              </div>
+            </v-card-actions>
+          </v-card>
+        </v-card-text>
+        <v-card-text>
+          <v-card outlined>
+            <v-subheader>등록된 태그</v-subheader>
+            <v-card-text>
+              <v-chip
+                color="info"
+                label
+                small
+                outlined
+                v-for="(item, i) in form.tags"
+                :key="i"
+                class="mr-2 mb-2">
+                {{item}} <v-icon small right @click="removeTag(item, i)">mdi-close</v-icon>
+              </v-chip>
+            </v-card-text>
+            <v-card-actions>
+              <div width="100">
+                <v-text-field
+                  v-model="tag"
+                  append-icon="mdi-plus"
+                  label="등록"
+                  placeholder="eg) vuetify"
+                  hide-details
+                  outlined
+                  dense
+                  @click:append="saveTag"
+                  @keypress.enter="saveTag"
+                />
+              </div>
+
+            </v-card-actions>
+          </v-card>
         </v-card-text>
         <v-divider/>
         <v-card-actions>
@@ -95,25 +121,18 @@ export default {
         category: '',
         tags: [],
         title: '',
-        content: '',
-        images: [],
-        important: 0
+        description: '',
+        categories: [],
+        tags: [],
+        type: ''
       },
       exists: false,
       loading: false,
       ref: null,
-      article: null,
-      board: null,
+      category: '',
+      tag: '',
       loaded: false,
-      options: {
-        language: 'ko',
-        hooks: {
-          addImageBlobHook: this.addImageBlobHook
-        }
-      },
-      plugins: [
-        [this.youtubePlugin]
-      ]
+      types: ['일반', '갤러리', '페이지']
     }
   },
   computed: {
@@ -151,24 +170,37 @@ export default {
       this.board = docBoard.data()
       const doc = await this.ref.collection('articles').doc(this.articleId).get()
       this.exists = doc.exists
-      if (!this.exists) return
-      const item = doc.data()
-      this.article = item
-      this.form.title = item.title
-      this.form.category = item.category
-      this.form.tags = item.tags
-      this.form.images = item.images
-      if (!item.images) this.form.images = []
-      this.form.important = item.important
-      const { data } = await axios.get(item.url)
-      this.form.content = typeof data === 'string' ? data : data.toString()
+
+      if (this.exists) {
+        const item = doc.data()
+        this.form.category = item.category
+        this.form.title = item.title
+        this.form.description = item.description
+        this.form.categories = item.categories
+        this.form.tags = item.tags
+        this.form.type = item.type
+      }
     },
     async save () {
-      if (!this.fireUser) throw Error('로그인이 필요합니다')
-      if (!this.form.category) throw Error('종류는 필수 항목입니다')
-      if (!this.form.title) throw Error('제목은 필수 항목입니다')
-      const md = this.$refs.editor.invoke('getMarkdown')
-      if (!md) throw Error('내용은 필수 항목입니다')
+      if (!this.$store.state.fireUser) throw Error('로그인이 필요합니다')
+      if (!this.form.category || !this.form.title) throw Error('종류 제목은 필수 항목입니다')
+      const r = await this.$swal.fire({
+        title: '정말 추가하시겠습니까?',
+        text: '추가 후 게시판 형태를 변경할 수 없습니다.',
+        icon: 'warning',
+        // confirmButtonText: 'Cool',
+        showCancelButton: true
+      })
+      if (!r.value) return
+      const form = {
+        category: this.form.category,
+        title: this.form.title,
+        description: this.form.description,
+        categories: this.form.categories,
+        tags: this.form.tags,
+        type: this.form.type,
+        updatedAt: new Date()
+      }
       this.loading = true
       try {
         const doc = {
@@ -181,23 +213,20 @@ export default {
           important: this.form.important
         }
         if (!this.exists) {
-          const fn = this.articleId + '-' + this.fireUser.uid + '.md'
-          const sn = await this.$firebase.storage().ref().child('boards').child(this.boardId).child(fn).putString(md)
-          doc.url = await sn.ref.getDownloadURL()
-          doc.createdAt = new Date()
-          doc.commentCount = 0
-          doc.readCount = 0
-          doc.uid = this.$store.state.fireUser.uid
-          doc.user = {
-            email: this.user.email,
-            photoURL: this.user.photoURL,
-            displayName: this.user.displayName
+          form.createdAt = new Date()
+          form.count = 0
+          form.uid = this.$store.state.fireUser.uid
+          form.user = {
+            email: this.$store.state.user.email,
+            photoURL: this.$store.state.user.photoURL,
+            displayName: this.$store.state.user.displayName
           }
-          doc.likeCount = 0
-          doc.likeUids = []
-          await this.ref.collection('articles').doc(this.articleId).set(doc)
-          this.exists = true
-          this.$router.push('/board/' + this.boardId)
+          form.readCount = 0
+          form.commentCount = 0
+          form.likeCount = 0
+          // form.categories = ['일반']
+          // form.tags = ['vue', 'firebase']
+          await this.ref.set(form)
         } else {
           const fn = this.articleId + '-' + this.article.uid + '.md'
           await this.$firebase.storage().ref().child('boards').child(this.boardId).child(fn).putString(md)

@@ -23,12 +23,12 @@ const theme = {
       error: '#F24C3D'
 
       // success: '#2C4027'
+    },
+    dark: {
+      primary: '#E53935', // #E53935
+      secondary: '#FFCDD2', // #FFCDD2
+      accent: '#3F51B5' // #3F51B5
     }
-    // dark: {
-    //   primary: colors.brown.darken1, // #E53935
-    //   secondary: colors.deepPurple.lighten4, // #FFCDD2
-    //   accent: colors.indigo.base // #3F51B5
-    // }
   }
 }
 const VuetifyObj = new Vuetify({

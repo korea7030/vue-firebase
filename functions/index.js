@@ -68,11 +68,11 @@ const removeOldTempFiles = async () => {
     .get()
   if (sn.empty) return
   const batch = db.batch()
-  
   // ES9 asynchronous iteration
   for await (const doc of sn.docs) {
+
     const file = doc.data()
-    await admin.storage().bucket().file(file.name).delete()
+    admin.storage().bucket().file(file.name).delete()
       .catch(e => console.error('tempFile remove err: ' + e.message))
     batch.delete(doc.ref)
   }
@@ -137,7 +137,7 @@ exports.onUpdateBoardArticle = functions.region(region).firestore
     imgs.push(context.params.bid)
     imgs.push(context.params.aid)
     const p = imgs.join('/') + '/'
-    
+    for await(const image of deleteImages) {
     // ES9 asynchronous iteration
     for await (const image of deleteImages) {
       admin.storage().bucket().file(p + image.id)
@@ -240,6 +240,20 @@ exports.saveTempFiles = functions.region(region).storage
     await db.collection('tempFiles').doc(id).set(set)
   })
 
+// exports.onDeleteTempFile = functions.region(region).firestore
+//   .document('tempFiles/{tid}')
+//   .onDelete(async (snap, context) => {
+//     const moment = require('moment')
+//     const sn = await db.collection('tempFiles')
+//       .where('createdAt', '<', moment().subtract(1, 'hours'))
+//       .orderBy('createdAt')
+//       .limit(5)
+//     if (!sn.empty) return
+//     for (const doc of sn.docs) {
+//       await admin.storage().bucket().file(doc.name).delete()
+//         .catch(e => console.error('tempFile remove err: ' + e.message))
+//     }
+//   })
 exports.seo = functions.https.onRequest(async (req, res) => {
   const { parse } = require('node-html-parser')
   const fs = require('fs')
@@ -254,7 +268,6 @@ exports.seo = functions.https.onRequest(async (req, res) => {
   const mainCollection = pluralize(ps.shift())
   const board = ps.shift()
   const article = ps.shift()
-
   const doc = await db.collection(mainCollection).doc(board).collection('articles').doc(article).get()
 
   if (!doc.exists) return res.send(html)
@@ -267,7 +280,8 @@ exports.seo = functions.https.onRequest(async (req, res) => {
   const ogDescriptionNode = child.childNodes[3]
   const ogImageNode = child.childNodes[4]
 
-  const title = item.title
+  const title = item.title + ' : jhlee'
+
   const description = item.summary.substr(0, 80)
   const image = item.images.length ? item.images[0].thumbUrl : '/logo.png'
   titleNode.set_content(title)

@@ -1,13 +1,11 @@
 <template>
-  <v-container fluid fill-height>
-     <v-container fluid v-if="!loaded">
-      <v-skeleton-loader type="article"></v-skeleton-loader>
-    </v-container>
+  <v-container fluid v-if="!loaded">
+    <v-skeleton-loader type="article"></v-skeleton-loader>
+  </v-container>
   <v-container fluid v-else>
     <v-alert v-if="!empty" type="warning" border="left" class="mb-0">
       검색된 게시판이 없습니다
     </v-alert>
-  </v-container>
   </v-container>
 </template>
 <script>

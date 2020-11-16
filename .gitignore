@@ -23,3 +23,5 @@ pnpm-debug.log*
 *.sw?
 
 firebaseConfig.js
+functions/key.json
+.firebase/*
