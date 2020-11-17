@@ -137,7 +137,7 @@ exports.onUpdateBoardArticle = functions.region(region).firestore
     imgs.push(context.params.bid)
     imgs.push(context.params.aid)
     const p = imgs.join('/') + '/'
-    for await(const image of deleteImages) {
+
     // ES9 asynchronous iteration
     for await (const image of deleteImages) {
       admin.storage().bucket().file(p + image.id)
@@ -268,6 +268,7 @@ exports.seo = functions.https.onRequest(async (req, res) => {
   const mainCollection = pluralize(ps.shift())
   const board = ps.shift()
   const article = ps.shift()
+
   const doc = await db.collection(mainCollection).doc(board).collection('articles').doc(article).get()
 
   if (!doc.exists) return res.send(html)
@@ -280,8 +281,7 @@ exports.seo = functions.https.onRequest(async (req, res) => {
   const ogDescriptionNode = child.childNodes[3]
   const ogImageNode = child.childNodes[4]
 
-  const title = item.title + ' : jhlee'
-
+  const title = item.title + ' : memi'
   const description = item.summary.substr(0, 80)
   const image = item.images.length ? item.images[0].thumbUrl : '/logo.png'
   titleNode.set_content(title)

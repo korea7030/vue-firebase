@@ -173,7 +173,6 @@ import { last } from 'lodash'
 import DisplayTime from '@/components/display-time'
 import DisplayUser from '@/components/display-user'
 import newCheck from '@/util/newCheck'
-
 const LIMIT = 5
 export default {
   components: { DisplayTime, DisplayUser },

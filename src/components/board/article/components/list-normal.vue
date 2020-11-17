@@ -1,7 +1,7 @@
 <template>
   <div>
     <template v-for="(item, i) in items">
-      <v-card :key="item.id" :class="$vuetify.breakpoint.xs ? '' : 'ma-4'" :flat="$vuetify.breakpoint.xs">
+      <v-card :key="item.id" :class="$vuetify.breakpoint.xs ? '' : 'ma-4'" :flat="$vuetify.breakpoint.xs" light>
         <v-card color="transparent" flat :to="category ? `${boardId}/${item.id}?category=${category}`:`${boardId}/${item.id}`">
           <v-card-subtitle class="text--primary body-1" :class="item.important > 0 ? 'text-truncate': ''">
             <display-title :item="item"/>
