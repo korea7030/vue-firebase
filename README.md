@@ -22,3 +22,14 @@ npm run lint
 
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
+
+## algolia
+```bash
+$ firebase functions:config:set algolia.app_id=yourAppId algolia.api_key=yourAdminKey algolia.search_key=SearchKey
+```
+
+### serve
+```bash
+$ firebase functions:config:get > .runtimeconfig.json
+$ firebase serve
+```
