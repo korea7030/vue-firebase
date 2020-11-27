@@ -33,3 +33,11 @@ $ firebase functions:config:set algolia.app_id=yourAppId algolia.api_key=yourAdm
 $ firebase functions:config:get > .runtimeconfig.json
 $ firebase serve
 ```
+
+## algolia search key
+
+**.env.local**
+```
+VUE_APP_ALGOLIA_APP_ID=your-id
+VUE_APP_ALGOLIA_SEARCH_KEY=your-search-key
+```
