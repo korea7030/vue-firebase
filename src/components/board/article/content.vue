@@ -33,7 +33,7 @@
       </v-toolbar>
       <v-divider/>
       <v-card-subtitle class="text--primary body-1">
-        <display-title :item="article"></display-title>
+        <display-title :item="article"/>
       </v-card-subtitle>
       <v-card-text>
         <viewer v-if="content" :initialValue="content" @load="onViewerLoad" :options="tuiOptions"></viewer>
@@ -201,9 +201,11 @@ export default {
       const ogTitleNode = document.querySelector('head meta[property="og:title"]')
       const ogDescriptionNode = document.querySelector('head meta[property="og:description"]')
       const ogImageNode = document.querySelector('head meta[property="og:image"]')
-      const title = item.title + ' : jhlee'
+
+      const title = item.title + ' : memi'
       const description = item.summary.substr(0, 80)
       const image = item.images.length ? item.images[0].thumbUrl : '/logo.png'
+
       document.title = title
       descriptionNode.setAttribute('content', description)
       ogTitleNode.setAttribute('content', title)
@@ -267,8 +269,10 @@ export default {
       let sn
       if (arrow < 0) sn = await ref.endBefore(this.doc).limitToLast(1).get()
       else sn = await ref.startAfter(this.doc).limit(1).get()
+
       if (sn.empty) throw Error('더이상 페이지가 없습니다')
       const doc = sn.docs[0]
+
       const us = this.$route.path.split('/')
       us.pop()
       us.push(doc.id)

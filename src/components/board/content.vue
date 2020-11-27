@@ -148,6 +148,7 @@ import BoardArticle from './article/index'
 import DisplayTime from '@/components/display-time'
 import DisplayUser from '@/components/display-user'
 import newCheck from '@/util/newCheck'
+
 export default {
   components: { BoardArticle, DisplayTime, DisplayUser },
   props: ['boardId', 'category', 'tag'],
