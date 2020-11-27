@@ -53,7 +53,7 @@ export default {
     fireUser () {
       return this.$store.state.fireUser
     },
-    getCategory() {
+    getCategory () {
       if (!this.category) return '전체'
       return this.category
     }
