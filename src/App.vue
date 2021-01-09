@@ -34,10 +34,10 @@ import SiteTitle from '@/views/site/title'
 import SiteFooter from '@/views/site/footer'
 import SiteMenu from '@/views/site/menu'
 import SiteSign from '@/views/site/sign'
-import SiteSearch from '@/views/site/search'
+// import SiteSearch from '@/views/site/search'
 
 export default {
-  components: { SiteTitle, SiteFooter, SiteMenu, SiteSign, SiteSearch },
+  components: { SiteTitle, SiteFooter, SiteMenu, SiteSign },
   name: 'App',
   data () {
     return {

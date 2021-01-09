@@ -1,23 +1,13 @@
 # vue-firebase
 
-## Project setup
-```
-npm install
-```
-
-### Compiles and hot-reloads for development
-```
-npm run serve
+## project start
+```bash
+$ yarn serve
 ```
 
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Lints and fixes files
-```
-npm run lint
+## project build
+```bash
+$ yarn build
 ```
 
 ### Customize configuration

@@ -14,11 +14,11 @@
       <v-icon left :color="item.commentCount ? 'info' : ''">mdi-comment</v-icon>
       <span class="body-2" v-if="item.commentCount < 100">{{item.commentCount}}</span>
       <v-tooltip bottom v-else>
-        <template v-slot:activator="{on}">
-          <span class="body-2" v-on="on">99+</span>
-        </template>
-        <span>{{item.commentCount}}</span>
-      </v-tooltip>
+          <template v-slot:activator="{on}">
+            <span class="body-2" v-on="on">99+</span>
+          </template>
+          <span>{{item.commentCount}}</span>
+        </v-tooltip>
     </div>
     <div class="d-flex justify-space-between align-center">
       <v-icon left :color="liked(item) ? 'success' : ''">mdi-thumb-up</v-icon>
